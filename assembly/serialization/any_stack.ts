@@ -28,7 +28,7 @@ export class AnyStack extends Uint8Array {
 	 * Cursor atual da pilha.
 	 */
 	set cursor(value: i32) {
-		this._cursor = (value as i32) % this.length;
+		this._cursor = (Math.abs(value) as i32) % this.length;
 	}
 
 	/**
@@ -83,15 +83,15 @@ export class AnyStack extends Uint8Array {
 	 * 
 	 * @param value Valor.
 	 * 
-	 * @returns {bool}
+	 * @returns {i32}
 	 */
-	pushByte(value: i32): bool {
+	pushByte(value: i32): i32 {
 		// Tamanho da alocação.
 		const length: i32 = 1;
 
 		// Encerrar operação quando não possuir espaço suficiente...
 		if (!this.hasSpace(length)) {
-			return false;
+			return -1;
 		}
 
 		// Salvar valor...
@@ -99,8 +99,7 @@ export class AnyStack extends Uint8Array {
 
 		// Atualizar offsets...
 		this._cursor += length;
-
-		return true;
+		return this._cursor;
 	}
 
 	/**
@@ -125,15 +124,15 @@ export class AnyStack extends Uint8Array {
 	 * 
 	 * @param value Valor.
 	 * 
-	 * @returns {bool}
+	 * @returns {i32}
 	 */
-	pushInt16(value: i32): bool {
+	pushInt16(value: i32): i32 {
 		// Tamanho da alocação.
 		const length: i32 = 2;
 
 		// Encerrar operação quando não possuir espaço suficiente...
 		if (!this.hasSpace(length)) {
-			return false;
+			return -1;
 		}
 
 		// Converter dados e salvar valor...
@@ -144,8 +143,7 @@ export class AnyStack extends Uint8Array {
 
 		// Atualizar offsets...
 		this._cursor += length;
-
-		return true;
+		return this._cursor;
 	}
 
 	/**
@@ -172,15 +170,15 @@ export class AnyStack extends Uint8Array {
 	 * 
 	 * @param value Valor.
 	 * 
-	 * @returns {bool}
+	 * @returns {i32}
 	 */
-	pushInt32(value: i32): bool {
+	pushInt32(value: i32): i32 {
 		// Tamanho da alocação.
 		const length: i32 = 4;
 
 		// Encerrar operação quando não possuir espaço suficiente...
 		if (!this.hasSpace(length)) {
-			return false;
+			return -1;
 		}
 
 		// Converter dados e salvar valor...
@@ -191,8 +189,7 @@ export class AnyStack extends Uint8Array {
 
 		// Atualizar offsets...
 		this._cursor += length;
-
-		return true;
+		return this._cursor;
 	}
 
 	/**
@@ -219,15 +216,15 @@ export class AnyStack extends Uint8Array {
 	 * 
 	 * @param value Valor.
 	 * 
-	 * @returns {bool}
+	 * @returns {i32}
 	 */
-	pushString(value: string): bool {
+	pushString(value: string): i32 {
 		// Tamanho da alocação.
 		const length: i32 = (value.length * 2) + 4;
 
 		// Encerrar operação quando não possuir espaço suficiente...
 		if (!this.hasSpace(length)) {
-			return false;
+			return -1;
 		}
 
 		// Dados da string (sem tamanho).
@@ -247,8 +244,7 @@ export class AnyStack extends Uint8Array {
 
 		// Atualizar offsets...
 		this._cursor += length;
-
-		return true;
+		return this._cursor;
 	}
 
 	/**
@@ -279,6 +275,59 @@ export class AnyStack extends Uint8Array {
 
 		// Atualizar offsets e encerrar a operação:
 		this._cursor -= (stringSize * 2) - 4;
+		return value;
+	}
+
+	/**
+	 * Salva um valor do tipo `Uint8Array` na pilha.
+	 * 
+	 * @param value Valor.
+	 * 
+	 * @returns {i32}
+	 */
+	pushByteArray(value: Uint8Array): i32 {
+		// Tamanho da alocação.
+		const length: i32 = value.byteLength + 4;
+
+		// Encerrar operação quando não possuir espaço suficiente...
+		if (!this.hasSpace(length)) {
+			return -1;
+		}
+
+		// Salvar valor e tamanho...
+		this.set(value, this._cursor);
+		this.set(
+			Serializer.fromInt32(value.byteLength),
+			this._cursor + value.byteLength
+		);
+
+		// Atualizar offsets...
+		this._cursor += length;
+		return this._cursor;
+	}
+
+	/**
+	 * Retira o último valor inserido na pilha como `u8`.
+	 * 
+	 * @returns {Uint8Array}
+	 */
+	popByteArray(): Uint8Array {
+		// Retornar um valor padrão quando a pilha estiver vazia...
+		if (this.isEmpty()) {
+			return new Uint8Array(0);
+		}
+
+		// Obter tamanho dos dados.
+		const arraySizeData: Uint8Array = this.slice(this._cursor - 4, this._cursor);
+		const arraySize: i32 = Serializer.intoInt32(arraySizeData);
+
+		// Obter dados...
+		const arrayData: Uint8Array = this.slice(this._cursor - arraySize - 4, this._cursor - 4);
+		const value: Uint8Array = new Uint8Array(arraySize);
+					value.set(arrayData);
+
+		// Atualizar offsets e encerrar a operação:
+		this._cursor -= (arraySize * 2) - 4;
 		return value;
 	}
 }

@@ -12,12 +12,12 @@ export class Serializer {
 	 * 
 	 * @returns {Uint8Array}
 	 */
-	static fromInt16(value: i32): Uint8Array {
+	static fromInt16(value: i16): Uint8Array {
 		// Resultado.
 		const result: Uint8Array = new Uint8Array(2);
 
 		// Dividir número em bytes...
-		for (let i: i32 = 0; i < 2; i += 1) {
+		for (let i: i16 = 0; i < 2; i += 1) {
 			result[i] = 0xFF & (value >> (i * 8));
 		}
 
@@ -29,9 +29,9 @@ export class Serializer {
 	 * 
 	 * @param value Valor.
 	 * 
-	 * @returns {i32}
+	 * @returns {i16}
 	 */
-	static intoInt16(value: Uint8Array): i32 {
+	static intoInt16(value: Uint8Array): i16 {
 		return value.byteLength >= 2 ?
 			value[0] * (0x00010000)
 			+ value[1] * (0x01000000)
@@ -75,7 +75,7 @@ export class Serializer {
 
 	/**
 	 * Serializa um valor do tipo `string` para um objeto binário.
-	 * Assume-se um texto codificado em UTF-16, com os primeiros 4 bytes
+	 * Assume-se um texto codificado em 16-bits, com os primeiros 4 bytes
 	 * determinando seu tamanho.
 	 * 
 	 * @param value Valor.
@@ -110,7 +110,7 @@ export class Serializer {
 
 	/**
 	 * Deserializa um objeto binário para um valor do tipo `string`.
-	 * Assume-se um texto codificado em UTF-16, com os primeiros 4 bytes 
+	 * Assume-se um texto codificado em 16-bits, com os primeiros 4 bytes 
 	 * determinando seu tamanho.
 	 * 
 	 * @param value Valor.
