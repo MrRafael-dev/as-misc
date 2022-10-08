@@ -1,5 +1,4 @@
-import { SMap } from "../mapping";
-import { WebURLInterface } from "./web_url";
+import { SMap, SPair } from "../mapping";
 
 /**
  * @interface WebRequestInterface
@@ -12,20 +11,23 @@ import { WebURLInterface } from "./web_url";
  * dados passados pelo cliente.
  */
 export interface WebRequestInterface {
-  /** Indica se a requisição é válida. */
-  isValid: bool;
-
   /** Método da requisição. */
   method: string;
 
-  /** Objeto de URL. */
-  url: WebURLInterface;
+  /** URL indicativa da requisição. */
+  url: string;
 
   /** Cabeçalhos da requisição. */
   headers: SMap;
 
   /** Corpo da requisição. */
-  body: Uint8Array;
+  body: ArrayBuffer | null;
+
+  /** Parâmetros de busca da requisição. */
+  searchParams: SMap;
+
+  /** Indica se a requisição é válida. */
+  isValid: bool;
 }
 
 /**
@@ -34,27 +36,29 @@ export interface WebRequestInterface {
  * @description
  * Implementação de uma requisição básica.
  */
-export abstract class WebRequest implements WebRequestInterface {
-  isValid: bool;
+export class WebRequest implements WebRequestInterface {
   method: string;
-  url: WebURLInterface;
+  url: string;
   headers: SMap;
-  body: Uint8Array;
+  body: ArrayBuffer | null;
+  searchParams: SMap;
+  isValid: bool;
 
   /**
  * @constructor
  * 
- * @param isValid Indica se a requisição é válida.
  * @param method Método da requisição.
- * @param url Objeto de URL.
+ * @param url URL indicativa da requisição.
  * @param headers Cabeçalhos da requisição.
  * @param body Corpo da requisição.
+ * @param isValid Indica se a requisição é válida.
  */
-  constructor(isValid: bool = false, method: string, url: WebURLInterface, headers: SMap = new SMap(), body: Uint8Array = new Uint8Array(0)) {
-    this.isValid = isValid;
+  constructor(method: string = "GET", url: string = "", headers: SPair[] = [], body: ArrayBuffer | null = null, searchParams: SPair[] = [], isValid: bool = true) {
     this.method = method.toUpperCase();
     this.url = url;
-    this.headers = headers;
+    this.headers = new SMap(headers);
     this.body = body;
+    this.searchParams = new SMap(searchParams);
+    this.isValid = isValid;
   }
 }

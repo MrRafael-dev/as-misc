@@ -115,7 +115,7 @@ export class Serializer {
 	 * 
 	 * @param value Valor.
 	 * 
-	 * @returns {i32}
+	 * @returns {string0}
 	 */
 	static intoString(value: Uint8Array): string {
 		// Tamanho da string.

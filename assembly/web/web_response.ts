@@ -1,4 +1,4 @@
-import { SMap } from "../mapping";
+import { SMap, SPair } from "../mapping";
 
 /**
  * @interface WebResponseInterface
@@ -13,23 +13,23 @@ import { SMap } from "../mapping";
  * em uma array de bytes e enviados de volta para o cliente.
  */
 export interface WebResponseInterface {
-  /** Indica se este objeto é válido. */
-  isValid: boolean;
-
-  /** URL indicativa de resposta. */
-  url: string;
-
   /** Status da resposta. */
   status: i32;
+
+  /** URL indicativa da resposta. */
+  url: string;
 
   /** Cabeçalhos da resposta. */
   headers: SMap;
 
   /** Corpo da resposta. */
-  body: Uint8Array;
+  body: ArrayBuffer | null;
 
   /** Indica se isto deve ser interpretado como um redirecionamento. */
   redirected: bool;
+
+  /** Indica se este objeto é válido. */
+  isValid: bool;
 }
 
 /**
@@ -38,28 +38,45 @@ export interface WebResponseInterface {
  * @description
  * Implementação de uma resposta básica.
  */
-export abstract class WebResponse implements WebResponseInterface {
-  isValid: boolean;
-  url: string;
+export class WebResponse implements WebResponseInterface {
   status: i32;
+  url: string;
   headers: SMap;
-  body: Uint8Array;
+  body: ArrayBuffer | null;
   redirected: bool;
+  isValid: bool;
 
   /**
    * @constructor
    * 
    * @param status Status da resposta.
+   * @param url URL indicativa da resposta.
    * @param headers Cabeçalhos da resposta.
    * @param body Corpo da resposta.
    * @param redirected Indica se isto deve ser interpretado como um redirecionamento.
+   * @param isValid Indica se este objeto é válido.
    */
-  constructor(url: string, status: i32 = 0, headers: SMap = new SMap(), body: Uint8Array = new Uint8Array(0), redirected: bool = false) {
-    this.isValid = true;
+  constructor(status: i32 = 0, url: string = "", headers: SPair[] = [], body: ArrayBuffer | null = null, redirected: bool = false, isValid: bool = true) {
     this.url = url;
     this.status = status;
-    this.headers = new SMap();
+    this.headers = new SMap(headers);
     this.body = body;
     this.redirected = redirected;
+    this.isValid = isValid;
+  }
+
+  withHeaders(headers: SPair[]): this {
+    this.headers.bulk(headers);
+    return this;
+  }
+
+  withStatus(status: i32): this {
+    this.status = status;
+    return this;
+  }
+
+  write(content: string): this {
+    this.body = String.UTF16.encode(content);
+    return this;
   }
 }

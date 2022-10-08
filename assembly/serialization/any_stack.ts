@@ -324,7 +324,7 @@ export class AnyStack extends Uint8Array {
 		// Obter dados...
 		const arrayData: Uint8Array = this.slice(this._cursor - arraySize - 4, this._cursor - 4);
 		const value: Uint8Array = new Uint8Array(arraySize);
-					value.set(arrayData);
+		value.set(arrayData);
 
 		// Atualizar offsets e encerrar a operação:
 		this._cursor -= (arraySize * 2) - 4;
