@@ -1,4 +1,4 @@
-import { SMap } from "../map";
+import { SMap } from "../mapping";
 
 /**
  * @interface WebURLInterface
@@ -51,18 +51,18 @@ export interface WebURLInterface {
  * Implementação de uma URL básica.
  */
 export abstract class WebURL implements WebURLInterface {
-  isValid     : bool;
-  protocol    : string;
-  username    : string;
-  password    : string;
-  href        : string;
-  origin      : string;
-  host        : string;
-  port        : number;
-  pathname    : string;
+  isValid: bool;
+  protocol: string;
+  username: string;
+  password: string;
+  href: string;
+  origin: string;
+  host: string;
+  port: number;
+  pathname: string;
   searchParams: SMap;
-  hash        : string;
-  
+  hash: string;
+
   /**
    * @constructor
    * 
@@ -79,16 +79,16 @@ export abstract class WebURL implements WebURLInterface {
    * @param hash Âncora.
    */
   constructor(isValid: bool = false, protocol: string = "", username: string = "", password: string = "", href: string = "", origin: string = "", host: string = "", port: i32 = 0, pathname: string = "", searchParams: SMap = new SMap(), hash: string = "") {
-    this.isValid      = isValid;
-    this.protocol     = protocol;
-    this.username     = username;
-    this.password     = password;
-    this.href         = href;
-    this.origin       = origin;
-    this.host         = host;
-    this.port         = port;
-    this.pathname     = pathname;
+    this.isValid = isValid;
+    this.protocol = protocol;
+    this.username = username;
+    this.password = password;
+    this.href = href;
+    this.origin = origin;
+    this.host = host;
+    this.port = port;
+    this.pathname = pathname;
     this.searchParams = searchParams;
-    this.hash         = hash;
+    this.hash = hash;
   }
 }

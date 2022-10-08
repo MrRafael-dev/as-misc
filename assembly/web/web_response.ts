@@ -1,4 +1,4 @@
-import { SMap } from "../map";
+import { SMap } from "../mapping";
 
 /**
  * @interface WebResponseInterface
@@ -39,11 +39,11 @@ export interface WebResponseInterface {
  * Implementação de uma resposta básica.
  */
 export abstract class WebResponse implements WebResponseInterface {
-  isValid   : boolean;
-  url       : string;
-  status    : i32;
-  headers   : SMap;
-  body      : Uint8Array;
+  isValid: boolean;
+  url: string;
+  status: i32;
+  headers: SMap;
+  body: Uint8Array;
   redirected: bool;
 
   /**
@@ -55,11 +55,11 @@ export abstract class WebResponse implements WebResponseInterface {
    * @param redirected Indica se isto deve ser interpretado como um redirecionamento.
    */
   constructor(url: string, status: i32 = 0, headers: SMap = new SMap(), body: Uint8Array = new Uint8Array(0), redirected: bool = false) {
-    this.isValid    = true;
-    this.url        = url;
-    this.status     = status;
-    this.headers    = new SMap();
-    this.body       = body;
-    this.redirected = redirected;    
+    this.isValid = true;
+    this.url = url;
+    this.status = status;
+    this.headers = new SMap();
+    this.body = body;
+    this.redirected = redirected;
   }
 }
