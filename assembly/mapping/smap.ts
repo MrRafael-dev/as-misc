@@ -56,6 +56,27 @@ export class SMap extends Map<string, string> {
   }
 
   /**
+   * Apaga uma chave.
+   * 
+   * @param key Chave.
+   * 
+   * @returns {bool}
+   */
+  _delete(key: string): bool {
+    return this.delete(key);
+  }
+
+  /**
+   * Apaga todas as chaves.
+   * 
+   * @returns {this}
+   */
+  _clear(): this {
+    this.clear();
+    return this;
+  }
+
+  /**
    * Insere ou modifica múltiplos pares de chave-valor de uma vez.
    * 
    * @param pairs Pares de chave-valor.
@@ -63,12 +84,33 @@ export class SMap extends Map<string, string> {
    * @returns {this}
    */
   bulk(pairs: SPair[]): this {
+    // Inserir valores...
     for (let i: i32 = 0; i < pairs.length; i += 2) {
       const pair: SPair = pairs[i];
       this._set(SMap.keyOf(pair), SMap.valueOf(pair));
     }
 
     return this;
+  }
+
+  /**
+   * Apaga múltiplas chaves de uma vez.
+   * 
+   * @param keys Chaves.
+   * 
+   * @returns {bool[]}
+   */
+  drop(keys: string[]): bool[] {
+    // Resultado a ser retornado.
+    const result: bool[] = new Array<bool>(keys.length);
+
+    // Apagar chaves...
+    for (let i: i32 = 0; i < keys.length; i += 1) {
+      const key: string = keys[i];
+      result.push(this._delete(key));
+    }
+
+    return result;
   }
 
   /**

@@ -13,6 +13,9 @@ import { SMap, SPair } from "../mapping";
  * em uma array de bytes e enviados de volta para o cliente.
  */
 export interface WebResponseInterface {
+  /** Indica se este objeto pode ser editado. */
+  isLocked: bool;
+
   /** Status da resposta. */
   status: i32;
 
@@ -39,12 +42,13 @@ export interface WebResponseInterface {
  * Implementação de uma resposta básica.
  */
 export class WebResponse implements WebResponseInterface {
-  status: i32;
-  url: string;
-  headers: SMap;
-  body: ArrayBuffer | null;
-  redirected: bool;
-  isValid: bool;
+  _isLocked: bool;
+  _status: i32;
+  _url: string;
+  _headers: SMap;
+  _body: ArrayBuffer | null;
+  _redirected: bool;
+  _isValid: bool;
 
   /**
    * @constructor
@@ -57,20 +61,100 @@ export class WebResponse implements WebResponseInterface {
    * @param isValid Indica se este objeto é válido.
    */
   constructor(status: i32 = 0, url: string = "", headers: SPair[] = [], body: ArrayBuffer | null = null, redirected: bool = false, isValid: bool = true) {
-    this.url = url;
-    this.status = status;
-    this.headers = new SMap(headers);
-    this.body = body;
-    this.redirected = redirected;
-    this.isValid = isValid;
+    this._isLocked = false;
+    this._url = url;
+    this._status = status;
+    this._headers = new SMap(headers);
+    this._body = body;
+    this._redirected = redirected;
+    this._isValid = isValid;
   }
 
-  withHeaders(headers: SPair[]): this {
+  lock(): this {
+    this._isLocked = true;
+    return this;
+  }
+
+  unlock(): this {
+    this._isLocked = false;
+    return this;
+  }
+
+  get isLocked(): bool {
+    return this._isLocked;
+  }
+
+  get url(): string {
+    return this._url;
+  }
+
+  set url(value: string) {
+    if (!this.isLocked) {
+      this._url = value;
+    }
+  }
+
+  get status(): i32 {
+    return this._status;
+  }
+
+  set status(value: i32) {
+    if (!this.isLocked) {
+      this._status = value;
+    }
+  }
+
+  get headers(): SMap {
+    return this._headers;
+  }
+
+  set headers(value: SMap) {
+    if (!this.isLocked) {
+      this._headers = value;
+    }
+  }
+
+  get body(): ArrayBuffer | null {
+    return this._body;
+  }
+
+  set body(value: ArrayBuffer | null) {
+    if (!this.isLocked) {
+      this._body = value;
+    }
+  }
+
+  get redirected(): bool {
+    return this._redirected;
+  }
+
+  set redirect(value: bool) {
+    if (!this.isLocked) {
+      this._redirected = value;
+    }
+  }
+
+  get isValid(): bool {
+    return this._isValid;
+  }
+
+  set isValid(value: bool) {
+    if (!this.isLocked) {
+      this._isValid = value;
+    }
+  }
+
+  /**
+   * 
+   * @param headers 
+   * @returns 
+   */
+  setHeaders(headers: SPair[]): this {
     this.headers.bulk(headers);
     return this;
   }
 
-  withStatus(status: i32): this {
+  setStatus(status: i32): this {
     this.status = status;
     return this;
   }
