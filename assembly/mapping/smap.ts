@@ -142,7 +142,7 @@ export class SMap extends Map<string, string> {
    * @returns {string[]}
    */
   _keys(): string[] {
-    return [...this.keys()];
+    return this.keys();
   }
 
   /**
@@ -151,7 +151,7 @@ export class SMap extends Map<string, string> {
    * @returns {string[]}
    */
   _values(): string[] {
-    return [...this.values()];
+    return this.values();
   }
 
   /**
