@@ -125,7 +125,7 @@ export class SMap extends Map<string, string> {
     const result: SPair[] = new Array<SPair>(keys.length);
 
     // Coletar valores...
-    for (let i: i32 = 0; i < keys.length; i += 2) {
+    for (let i: i32 = 0; i < keys.length; i += 1) {
       const key: string = keys[i];
       result[i] = SMap.pair(
         keys[i],

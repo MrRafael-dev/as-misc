@@ -114,7 +114,7 @@ export class WebURL implements WebURLInterface {
       const param: string = params[i];
       const separator: i32 = param.indexOf("=");
 
-      const key: string = param.substring(0, separator >= 0 ? separator : param.length);
+      const key: string = param.substring(i === 0 && param.startsWith("?") ? 1 : 0, separator >= 0 ? separator : param.length);
       const value: string = separator >= 0 ? param.substring(separator + 1, param.length) : "";
 
       result.set(key.length > 0 ? key : "", value);
@@ -169,22 +169,15 @@ export class WebURL implements WebURLInterface {
 
     // Parâmetros de busca.
     const querySeparator: i32 = url.indexOf("?");
-    const searchParams: SMap = new SMap();
+    let searchParams: SMap = new SMap();
 
     // Dividir parâmetros de busca da URL...
     if (querySeparator >= 0) {
-      const queryStrings: string[] = url.substring(querySeparator + 1, url.length).split("&");
+      const queryStrings: string = url.substring(querySeparator + 1, url.length);
       url = url.substring(0, querySeparator);
 
       // Salvar parâmetros de busca...
-      for (let i: i32 = 0; i < queryStrings.length; i += 1) {
-        const queryPair: string[] = queryStrings[i].split("=");
-
-        searchParams.set(
-          queryPair[0],
-          queryPair.length > 1 ? queryPair[1] : ""
-        );
-      }
+      searchParams = this.parseSearchParams(queryStrings);
     }
 
     // Rotas da URL e primeira rota.

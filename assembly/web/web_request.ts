@@ -45,14 +45,14 @@ export class WebRequest implements WebRequestInterface {
   isValid: bool;
 
   /**
- * @constructor
- * 
- * @param method Método da requisição.
- * @param url URL indicativa da requisição.
- * @param headers Cabeçalhos da requisição.
- * @param body Corpo da requisição.
- * @param isValid Indica se a requisição é válida.
- */
+   * @constructor
+   * 
+   * @param method Método da requisição.
+   * @param url URL indicativa da requisição.
+   * @param headers Cabeçalhos da requisição.
+   * @param body Corpo da requisição.
+   * @param isValid Indica se a requisição é válida.
+   */
   constructor(method: string = "GET", url: string = "", headers: SPair[] = [], body: ArrayBuffer | null = null, searchParams: SPair[] = [], isValid: bool = true) {
     this.method = method.toUpperCase();
     this.url = url;
