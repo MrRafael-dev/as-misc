@@ -59,7 +59,7 @@ export class WebRouter extends Map<string, WebRouteHandler> {
       res
         .setStatus(404)
         .setHeaders([
-          ["content-type", "text/plain; charset=utf-8"]
+          ["content-type", "application/json; charset=utf-8"]
         ])
         .write(`{"http":404,"status":"error","message":"404 Not Found."}`)
         .lock();
