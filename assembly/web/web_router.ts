@@ -46,9 +46,7 @@ export class WebRouter extends Map<string, WebRouteHandler> {
 
       if (route.isValid) {
         const handler: WebRouteHandler = this.get(key) as WebRouteHandler;
-        handler(ctx, req, res, route);
-
-        break;
+        return handler(ctx, req, res, route);
       }
     }
 
@@ -61,10 +59,12 @@ export class WebRouter extends Map<string, WebRouteHandler> {
       res
         .setStatus(404)
         .setHeaders([
-          ["Content-Type", "text/plain; utf-8"]
+          ["content-type", "text/plain; charset=utf-8"]
         ])
-        .write("404 Not Found")
+        .write(`{"http":404,"status":"error","message":"404 Not Found."}`)
         .lock();
     };
+
+    return handler(ctx, req, res);
   }
 }
