@@ -6,7 +6,7 @@
  *
  * @returns {i32}
  */
- export function range(min: i32 = 0, max: i32 = 0): i32 {
+export function range(min: i32 = 0, max: i32 = 0): i32 {
   const cmin: f64 = Math.ceil(min);
   const fmax: f64 = Math.floor(max);
 

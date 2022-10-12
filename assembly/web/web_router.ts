@@ -1,156 +1,70 @@
-import { SMap } from "../mapping";
 import { WebContext, WebRequestHandler } from "./web_context";
 import { WebRequest } from "./web_request";
 import { WebResponse } from "./web_response";
-import { WebURL } from "./web_url";
+import { WebRoute } from "./web_route";
+
+/** Representa um evento de requisição. Equivale ao tipo `(ctx: WebContext, req: WebRequest, res: WebResponse, route: WebRoute) => void`. */
+type WebRouteHandler = (ctx: WebContext, req: WebRequest, res: WebResponse, route: WebRoute) => void;
 
 /**
- * @class WebRouteParams
+ * @class WebRouter
  * 
  * @description
- * Representa um resultado de rota.
+ * Representa um gerenciador de rotas. É uma das partes mais básicas de um
+ * servidor, pois permite mapear um website para páginas diferentes e/ou
+ * controlar uma API REST.
+ * 
+ * Esta classe complementa o `WebContext`.
  */
-export class WebRouteParams {
-  /** Indica se o resultado da checagem foi válido. */
-  isValid: bool;
-
-  /** Mapa de propriedades. */
-  params: SMap;
-
-  /** Mapa de parâmetros de busca (iniciados por `?`). */
-  searchParams: SMap;
-
-  /** Âncora. */
-  hash: string;
+export class WebRouter extends Map<string, WebRouteHandler> {
+  /** Evento de requisição utilizado quando uma rota não existir. */
+  notFound: WebRequestHandler | null;
 
   /**
    * @constructor
-   * 
-   * @param isValid Indica se o resultado da checagem foi válido.
-   * @param map Mapa de propriedades.
-   * @param params Mapa de parâmetros de busca (iniciados por `?`).
-   * @param anchor Âncora.
    */
-  constructor(isValid: bool, map: SMap, params: SMap, anchor: string) {
-    this.isValid = isValid;
-    this.params = map;
-    this.searchParams = params;
-    this.hash = anchor;
-  }
-}
-
-/**
-* @class WebRoute
-* 
-* @description
-* 
-*/
-export class WebRoute {
-  /** Caminho da rota. */
-  path: string;
-
-  /**
-   * @constructor
-   * 
-   * @param path Caminho da rota.
-   */
-  constructor(path: string) {
-    this.path = path;
-  }
-
-  /**
-   * Verifica se uma determinada rota é válida.
-   * 
-   * @param path Caminho da rota.
-   * 
-   * @returns {WebRouteParams}
-   */
-  match(path: string): WebRouteParams {
-    // Obter parâmetros de busca e de âncora...
-    const qindex: i32 = this.path.indexOf("?");
-    const hindex: i32 = this.path.indexOf("#");
-
-    // Separar parâmetros especiais da rota...
-    const rindex: i32 = Math.min(qindex, hindex) as i32;
-    const rpath: string = this.path.substring(0, rindex >= 0 ? rindex : this.path.length);
-
-    // Separar parâmetros de busca e âncora...
-    const searchParamString: string = qindex >= 0 ? this.path.substring(qindex + 1, this.path.length) : "";
-    const hashString: string = hindex >= 0 ? this.path.substring(hindex + 1, this.path.length) : "";
-
-    // Separar caminhos...
-    const selfRoutes: string[] = this.path.split("/");
-    const matchRoutes: string[] = rpath.split("/");
-
-    // Determinar o tamanho mínimo para iterar sobre eles...
-    const mapSize: i32 = Math.min(selfRoutes.length, matchRoutes.length) as i32;
-
-    // Variáveis que compõem o resultado:
-    let isValid: boolean = true;
-    let params: SMap = new SMap();
-
-    // Percorrer caminhos...
-    for (let i: i32 = 0; i < mapSize; i += 1) {
-      const selfMap: string = selfRoutes[i];
-      const matchMap: string = matchRoutes[i];
-
-      // Separar propriedades...
-      if (selfMap.startsWith(":")) {
-        const key: string = selfMap.substring(1, selfMap.length);
-        params.set(key.length > 1 ? key : "_", decodeURIComponent(matchMap));
-      }
-
-      // Validar wildcard...
-      else if (selfMap === "*") {
-        isValid = true;
-        break;
-      }
-
-      // Seguir adiante...
-      else if (selfMap === matchMap) {
-        continue;
-      }
-
-      // Invalidar caminho...
-      else {
-        isValid = false;
-        break;
-      }
-    }
-
-    return new WebRouteParams(
-      isValid,
-      params,
-      WebURL.parseSearchParams(searchParamString),
-      hashString
-    );
-  }
-}
-
-export class WebRouteHandler {
-  methods: string;
-
-  constructor(methods: string) {
-    this.methods = methods;
-  }
-
-
-}
-
-export class WebRouter {
-  routes: Map<string, Map<string, WebRequestHandler[]>>;
-
   constructor() {
-    this.routes = new Map<string, Map<string, WebRequestHandler[]>>();
+    super();
+    this.notFound = null;
   }
 
+  /**
+   * Escuta.
+   * 
+   * @param ctx Contexto.
+   * @param req Requisição.
+   * @param res Resposta.
+   */
   handle(ctx: WebContext, req: WebRequest, res: WebResponse): void {
-    const method: string = req.method;
+    const path: string = `${req.method.trim()} ${req.url.trim()}`;
 
-    if (!this.routes.has(method)) {
-      res.lock();
+    const keys: string[] = this.keys();
+
+    for (let i: i32 = 0; i < keys.length; i += 1) {
+      const key: string = keys[i];
+      const route: WebRoute = WebRoute.match(key, path);
+
+      if (route.isValid) {
+        const handler: WebRouteHandler = this.get(key) as WebRouteHandler;
+        handler(ctx, req, res, route);
+
+        break;
+      }
     }
 
-    const routeMap: Map<string, WebRequestHandler[]> = this.routes.get(method) as Map<string, WebRequestHandler[]>;
+    if (this.notFound !== null) {
+      const handler: WebRequestHandler = this.notFound as WebRequestHandler;
+      return handler(ctx, req, res);
+    }
+
+    const handler: WebRequestHandler = (ctx: WebContext, req: WebRequest, res: WebResponse): void => {
+      res
+        .setStatus(404)
+        .setHeaders([
+          ["Content-Type", "text/plain; utf-8"]
+        ])
+        .write("404 Not Found")
+        .lock();
+    };
   }
 }

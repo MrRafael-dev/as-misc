@@ -1,9 +1,9 @@
 /** Tipos da folha. */
 export enum LeafType {
-	Null   = 0,
+	Null = 0,
 	String = 1,
-	Int32  = 2,
-	Bool   = 3,
+	Int32 = 2,
+	Bool = 3,
 	Object = 4,
 }
 
@@ -35,11 +35,64 @@ export class Leaf {
 	 * @param int32Value Valor da folha, quando considerada um número.
 	 * @param children Valor da folha, quando considerada um objeto.
 	 */
-	constructor(leafType: LeafType = LeafType.Null, stringValue: string | null = null, int32Value: i32 | null = null, children: Leaf[] | null = null) {
+	private constructor(leafType: LeafType = LeafType.Null, stringValue: string | null = null, int32Value: i32 | null = null, children: Leaf[] | null = null) {
 		this._leafType = leafType;
 		this._stringValue = stringValue;
 		this._int32Value = int32Value;
 		this._children = children;
+	}
+
+	/**
+	 * Instancia uma nova folha do tipo nulo.
+	 * 
+	 * @returns {Leaf}
+	 */
+	static Null(): Leaf {
+		return new Leaf();
+	}
+
+	/**
+	 * Instancia uma nova folha do tipo string.
+	 * 
+	 * @param value Valor.
+	 * 
+	 * @returns {Leaf}
+	 */
+	static String(value: string): Leaf {
+		return new Leaf(LeafType.String, value);
+	}
+
+	/**
+	 * Instancia uma nova folha do tipo número.
+	 * 
+	 * @param value Valor.
+	 * 
+	 * @returns {Leaf}
+	 */
+	static Int32(value: i32): Leaf {
+		return new Leaf(LeafType.Int32, null, value);
+	}
+
+	/**
+	 * Instancia uma nova folha do tipo booleano.
+	 * 
+	 * @param value Valor.
+	 * 
+	 * @returns {Leaf}
+	 */
+	static Bool(value: bool): Leaf {
+		return new Leaf(LeafType.Bool, null, value === true ? 0 : 1);
+	}
+
+	/**
+	 * Instancia uma nova folha do tipo objeto.
+	 * 
+	 * @param value Valores.
+	 * 
+	 * @returns {Leaf}
+	 */
+	static Object(value: Leaf[]): Leaf {
+		return new Leaf(LeafType.Object, null, null, value);
 	}
 
 	/** Tipo desta folha. */
