@@ -1,4 +1,5 @@
 import { SMap, SPair } from "../mapping";
+import { webStatus } from "./web_info";
 
 /**
  * @interface WebResponseInterface
@@ -42,13 +43,13 @@ export interface WebResponseInterface {
  * Implementação de uma resposta básica.
  */
 export class WebResponse implements WebResponseInterface {
-  _isLocked: bool;
-  _status: i32;
-  _url: string;
-  _headers: SMap;
-  _body: ArrayBuffer | null;
-  _redirected: bool;
-  _isValid: bool;
+  private _isLocked: bool;
+  private _status: i32;
+  private _url: string;
+  private _headers: SMap;
+  private _body: ArrayBuffer | null;
+  private _redirected: bool;
+  private _isValid: bool;
 
   /**
    * @constructor
@@ -102,6 +103,14 @@ export class WebResponse implements WebResponseInterface {
     if (!this.isLocked) {
       this._status = value;
     }
+  }
+
+  get statusText(): string {
+    if (webStatus.has(this.status)) {
+      return webStatus.get(this.status) as string;
+    }
+
+    return "Unknown Status";
   }
 
   get headers(): SMap {

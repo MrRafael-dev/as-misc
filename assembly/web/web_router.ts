@@ -1,4 +1,7 @@
 import { SMap } from "../mapping";
+import { WebContext, WebRequestHandler } from "./web_context";
+import { WebRequest } from "./web_request";
+import { WebResponse } from "./web_response";
 import { WebURL } from "./web_url";
 
 /**
@@ -121,5 +124,33 @@ export class WebRoute {
       WebURL.parseSearchParams(searchParamString),
       hashString
     );
+  }
+}
+
+export class WebRouteHandler {
+  methods: string;
+
+  constructor(methods: string) {
+    this.methods = methods;
+  }
+
+
+}
+
+export class WebRouter {
+  routes: Map<string, Map<string, WebRequestHandler[]>>;
+
+  constructor() {
+    this.routes = new Map<string, Map<string, WebRequestHandler[]>>();
+  }
+
+  handle(ctx: WebContext, req: WebRequest, res: WebResponse): void {
+    const method: string = req.method;
+
+    if (!this.routes.has(method)) {
+      res.lock();
+    }
+
+    const routeMap: Map<string, WebRequestHandler[]> = this.routes.get(method) as Map<string, WebRequestHandler[]>;
   }
 }
