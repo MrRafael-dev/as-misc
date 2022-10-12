@@ -1,9 +1,9 @@
 /** Tipos da folha. */
 export enum LeafType {
-	Null = 0,
+	Null   = 0,
 	String = 1,
-	Int32 = 2,
-	Bool = 3,
+	Int32  = 2,
+	Bool   = 3,
 	Object = 4,
 }
 
