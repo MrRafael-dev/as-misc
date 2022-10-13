@@ -1,4 +1,4 @@
-import { SMap, SPair } from "../mapping";
+import { SMap, SPair, SPairData } from "../mapping";
 import { webStatus } from "./web_info";
 
 /**
@@ -50,11 +50,14 @@ export class WebResponseData {
   /** Status da resposta. */
   status!: i32;
 
+  /** Descrição do status da resposta. */
+  statusText!: string;
+
   /** URL indicativa da resposta. */
   url!: string;
 
   /** Cabeçalhos da resposta. */
-  headers!: SMap;
+  headers!: SPairData[];
 
   /** Corpo da resposta. */
   body!: ArrayBuffer | null;
@@ -99,6 +102,29 @@ export class WebResponse implements WebResponseInterface {
     this._body = body;
     this._redirected = redirected;
     this._isValid = isValid;
+  }
+
+  import(data: WebResponseData): this {
+    this.url = data.url;
+    this.status = data.status;
+    this.headers.import(data.headers);
+    this.body = data.body;
+    this.redirected = data.redirected;
+    this.isValid = data.isValid;
+
+    return this;
+  }
+
+  export(): WebResponseData {
+    return {
+      url: this.url,
+      status: this.status,
+      statusText: this.statusText,
+      headers: this.headers.export(),
+      body: this.body,
+      redirected: this.redirected,
+      isValid: this.isValid
+    } as WebResponseData;
   }
 
   lock(): this {
@@ -167,7 +193,7 @@ export class WebResponse implements WebResponseInterface {
     return this._redirected;
   }
 
-  set redirect(value: bool) {
+  set redirected(value: bool) {
     if (!this.isLocked) {
       this._redirected = value;
     }
