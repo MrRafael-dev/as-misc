@@ -10,10 +10,10 @@ export type SPair = string[];
  */
 export class SPairData {
   /** Chave. */
-  key: string = "";
+  key!: string;
 
   /** Valor. */
-  value: string = "";
+  value!: string;
 }
 
 /**

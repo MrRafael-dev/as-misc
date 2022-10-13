@@ -1,4 +1,4 @@
-import { SMap, SPair } from "../mapping";
+import { SMap, SPair, SPairData } from "../mapping";
 
 /**
  * @interface WebRequestInterface
@@ -31,6 +31,33 @@ export interface WebRequestInterface {
 }
 
 /**
+ * @class WebRequestData
+ * 
+ * @description
+ * Objeto de transferência. Pode ser usado para transferir dados de requisição
+ * entre um intermediário para cá.
+ */
+export class WebRequestData {
+  /** Método da requisição. */
+  method!: string;
+
+  /** URL indicativa da requisição. */
+  url!: string;
+
+  /** Cabeçalhos da requisição. */
+  headers!: SPairData[];
+
+  /** Corpo da requisição. */
+  body!: ArrayBuffer | null;
+
+  /** Parâmetros de busca da requisição. */
+  searchParams!: SPairData[];
+
+  /** Indica se a requisição é válida. */
+  isValid!: bool;
+}
+
+/**
  * @class WebRequest
  * 
  * @description
@@ -60,5 +87,39 @@ export class WebRequest implements WebRequestInterface {
     this.body = body;
     this.searchParams = new SMap(searchParams);
     this.isValid = isValid;
+  }
+
+  /**
+   * Importa dados de um objeto de transferência para cá.
+   * 
+   * @param data Objeto de transferência.
+   * 
+   * @returns {this}
+   */
+  import(data: WebRequestData): this {
+    this.method       = data.method;
+    this.url          = data.url;
+    this.headers.import(data.headers);
+    this.body         = data.body;
+    this.searchParams.import(data.searchParams);
+    this.isValid      = this.isValid;
+
+    return this;
+  }
+
+  /**
+   * Exporta os dados da requisição para um objeto de transferência.
+   * 
+   * @returns {WebRequestData}
+   */
+  export(): WebRequestData {
+    return {
+      method      : this.method,
+      url         : this.url,
+      headers     : this.headers.export(),
+      body        : this.body,
+      searchParams: this.searchParams.export(),
+      isValid     : this.isValid
+    } as WebRequestData;
   }
 }

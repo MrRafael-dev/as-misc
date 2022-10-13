@@ -390,6 +390,6 @@ router.notFound = (ctx: WebContext, req: WebRequest, res: WebResponse): void => 
 This is not meant to be production-ready or anything like that.
 It was done mostly to experiment with the idea.
 
-Initial efforts aside, this isn't the only and probably won't be the only *web* framework written for this language. For a more complete *web* setup, you may also want to check out these libraries/*frameworks*:
+Initial efforts aside, this is not and probably won't be the only *web* framework written for this language. For a more complete *web* setup, you may also want to check out these libraries/*frameworks*:
 - **[hypertext-as](https://github.com/jtenner/hypertext-as)** is a full HTTP parser. It can receive and parse connections directly from the socket and have *AssemblyScript* handle a *web* server entirely by itself.
 - **[as-json](https://github.com/JairusSW/as-json)** is a JSON parser. It can be very useful for processing data sent to the server and to transfer objects between *WebAssembly* and the host.

@@ -37,6 +37,36 @@ export interface WebResponseInterface {
 }
 
 /**
+ * @class WebResponsetData
+ * 
+ * @description
+ * Objeto de transferência. Pode ser usado para transferir dados de resposta
+ * entre um intermediário para cá.
+ */
+export class WebResponseData {
+  /** Indica se este objeto pode ser editado. */
+  isLocked!: bool;
+
+  /** Status da resposta. */
+  status!: i32;
+
+  /** URL indicativa da resposta. */
+  url!: string;
+
+  /** Cabeçalhos da resposta. */
+  headers!: SMap;
+
+  /** Corpo da resposta. */
+  body!: ArrayBuffer | null;
+
+  /** Indica se isto deve ser interpretado como um redirecionamento. */
+  redirected!: bool;
+
+  /** Indica se este objeto é válido. */
+  isValid!: bool;
+}
+
+/**
  * @class WebResponse
  * 
  * @description
