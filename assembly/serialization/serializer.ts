@@ -33,8 +33,8 @@ export class Serializer {
 	 */
 	static intoInt16(value: Uint8Array): i16 {
 		return value.byteLength >= 2 ?
-			value[0] * (0x00010000)
-			+ value[1] * (0x01000000)
+			value[0] * (0x0100)
+			+ value[1] * (0x0001)
 			: 0;
 	}
 
