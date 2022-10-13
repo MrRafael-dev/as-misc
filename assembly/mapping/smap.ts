@@ -2,21 +2,6 @@
 export type SPair = string[];
 
 /**
- * @class SPairData
- * 
- * @description
- * Objeto de transferência usado para importar/exportar dados de uma
- * plataforma para outra.
- */
-export class SPairData {
-  /** Chave. */
-  key!: string;
-
-  /** Valor. */
-  value!: string;
-}
-
-/**
  * @class SMap
  * @extends Map
  * 
@@ -220,48 +205,6 @@ export class SMap extends Map<string, string> {
   }
 
   /**
-   * Importa dados de objetos de transferência para este mapa.
-   * 
-   * @param pairs Objetos de transferência.
-   * 
-   * @returns {this}
-   */
-  import(pairs: SPairData[]): this {
-    // Inserir valores...
-    for (let i: i32 = 0; i < pairs.length; i += 1) {
-      const pair: SPairData = pairs[i];
-      this._set(pair.key, pair.value);
-    }
-
-    return this;
-  }
-
-  /**
-   * Obtém todo o conteúdo deste mapa em objetos de transferência.
-   * 
-   * @returns {SPairData[]}
-   */
-  export(): SPairData[] {
-    // Resultado a ser retornado.
-    const result: SPairData[] = [];
-
-    // Chaves e valores deste mapa.
-    const keys: string[] = this._keys();
-    const values: string[] = this._values();
-
-    // Percorrer chaves e valores...
-    for (let i: i32 = 0; i < keys.length; i += 1) {
-      const key: string = keys[i];
-      const value: string = values[i];
-
-      result.push({ key, value } as SPairData);
-    }
-
-    // Retornar clone:
-    return result;
-  }
-
-  /**
    * Forma e retorna um par de chave-valor.
    * 
    * @param key Chave.
@@ -271,28 +214,6 @@ export class SMap extends Map<string, string> {
    */
   static pair(key: string = "", value: string = ""): SPair {
     return [key, value];
-  }
-
-  /**
-   * Converte um par de chave-valor em um objeto de transferência.
-   * 
-   * @param pair Par.
-   * 
-   * @returns {SPairData}
-   */
-  static exportPair(pair: SPair): SPairData {
-    return {key: this.keyOf(pair), value: this.valueOf(pair)} as SPairData;
-  }
-
-  /**
-   * Converte um objeto de transferência em um par de chave-valor.
-   * 
-   * @param pair Objeto de transferência.
-   * 
-   * @returns {SPair}
-   */
-  static importPair(pair: SPairData): SPair {
-    return [pair.key, pair.value];
   }
 
   /**

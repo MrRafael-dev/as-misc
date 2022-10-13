@@ -1,4 +1,4 @@
-import { SMap, SPair, SPairData } from "../mapping";
+import { SMap, SPair } from "../mapping";
 
 /**
  * @interface WebRequestInterface
@@ -45,13 +45,13 @@ export class WebRequestData {
   url!: string;
 
   /** Cabeçalhos da requisição. */
-  headers!: SPairData[];
+  headers!: SPair[];
 
   /** Corpo da requisição. */
   body!: ArrayBuffer | null;
 
   /** Parâmetros de busca da requisição. */
-  searchParams!: SPairData[];
+  searchParams!: SPair[];
 
   /** Indica se a requisição é válida. */
   isValid!: bool;
@@ -99,9 +99,9 @@ export class WebRequest implements WebRequestInterface {
   import(data: WebRequestData): this {
     this.method       = data.method;
     this.url          = data.url;
-    this.headers.import(data.headers);
+    this.headers.bulk(data.headers);
     this.body         = data.body;
-    this.searchParams.import(data.searchParams);
+    this.searchParams.bulk(data.searchParams);
     this.isValid      = this.isValid;
 
     return this;
@@ -116,9 +116,9 @@ export class WebRequest implements WebRequestInterface {
     return {
       method      : this.method,
       url         : this.url,
-      headers     : this.headers.export(),
+      headers     : this.headers._entries(),
       body        : this.body,
-      searchParams: this.searchParams.export(),
+      searchParams: this.searchParams._entries(),
       isValid     : this.isValid
     } as WebRequestData;
   }

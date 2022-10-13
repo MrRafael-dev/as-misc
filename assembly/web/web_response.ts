@@ -1,4 +1,4 @@
-import { SMap, SPair, SPairData } from "../mapping";
+import { SMap, SPair } from "../mapping";
 import { webStatus } from "./web_info";
 
 /**
@@ -57,7 +57,7 @@ export class WebResponseData {
   url!: string;
 
   /** Cabeçalhos da resposta. */
-  headers!: SPairData[];
+  headers!: SPair[];
 
   /** Corpo da resposta. */
   body!: ArrayBuffer | null;
@@ -107,7 +107,7 @@ export class WebResponse implements WebResponseInterface {
   import(data: WebResponseData): this {
     this.url = data.url;
     this.status = data.status;
-    this.headers.import(data.headers);
+    this.headers.bulk(data.headers);
     this.body = data.body;
     this.redirected = data.redirected;
     this.isValid = data.isValid;
@@ -120,7 +120,7 @@ export class WebResponse implements WebResponseInterface {
       url: this.url,
       status: this.status,
       statusText: this.statusText,
-      headers: this.headers.export(),
+      headers: this.headers._entries(),
       body: this.body,
       redirected: this.redirected,
       isValid: this.isValid
