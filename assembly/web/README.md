@@ -23,9 +23,9 @@ not possible to have a fully standalone *web* server. We'll either have to
 write bindings for a given runtime, or use a specific runtime which already does this.
 
 For this guide, no host bindings will be written. Everything will be sent 
-and received through primitive types (e.g. `string`, `number`), which *AssemblyScript* 
-already offer by default. As long as we provide structures made of just it's primitive 
-types, we should be able to send and receive data between them without much trouble.
+and received on a way which *AssemblyScript* can already do by default. As long as our
+structures are simple enough, we should be able to send and receive data between 
+them without much trouble.
 
 ```typescript
 /** AssemblyScript */
@@ -63,12 +63,50 @@ getChest(chest);
 getWarriors(warriors);
 ```
 
+However, *AssemblyScript* is capable of transfering simple object structures, 
+as long as they don't have a constructor. With this, we can create a data 
+transfer object to send and receive data from and to *Node.js* and *AssemblyScript*.
+
+```typescript
+/** AssemblyScript. */
+class Warrior {
+  name!: string;
+  coins!: i32;
+}
+
+export function giveCoins(warrior: Warrior): Warrior {
+  warrior.coins += 100;
+  return warrior;
+}
+
+export function createWarrior(name: string, coins: i32): Warrior {
+  return {name: name, coins: coins} as Warrior;
+}
+
+/** JavaScript */
+import { giveCoins, createWarrior } from "./assemblyscript.js";
+
+let mainCharacter = {
+  name: "Ephesius Crassinus",
+  coins: 0
+};
+
+// Update and rewrite old object with a copy...
+mainCharacter = giveCoins(mainCharacter);
+
+// Create another object.
+let sideCharacter = createWarrior("Athaulf Bradleye", 0);
+```
+
 ## Transfer format
 
-While *JavaScript* can pass the values we need just fine, *AssemblyScript* will
-require a more structured solution in order to do the same. This will be a
-problem specially for headers, because `as-misc` retrieves them as a group of
-*arrays* ordered in a "key-value" way. This is all done by one class called `SMap`.
+By using the concept we saw above, we can make a simple object structure to transfer
+data between the host and *AssemblyScript*. By default, `as-misc` provides two 
+data structures,`WebRequestData` and `WebResponseData`.
+
+Headers and search parameters will be sent as a 2D array, which is how `Map` objects
+strucutre their data when using `map.entries()`. For the *web* module, we use an
+extended object called `SMap`.
 
 ```typescript
 const missions: SMap = new SMap([
@@ -76,47 +114,8 @@ const missions: SMap = new SMap([
 	["Athaulf Bradleye", "Send troops for an invasion."],
 	["Reidun", "Deliver a recipe to the old wizard."]
 ]);
-```
 
-One way we can achieve this is by using a 3D array. And since strings are the 
-great majority of our content, we'll convert everything to it. Things like
-numbers and JSON can be dealt by *JavaScript* with `parseInt()` and `JSON.parse()`.
-
-Here's our response format:
-```jsonc
-[
-  /*
-  	HTTP's first line of response.
-    
-    -> Version: [0][0][0]
-    -> Status : [0][0][1]
-    -> Text   : [0][0][2]
-   */
-  [[
-    "HTTP/1.1",
-    "200", 
-    "OK"
-  ]],
-    
-  /*
-    Response headers.
-  
-    -> headers: [1][...]
-  */
-  [
-		["Content-Type", "text/html; charset=utf-8"],
-		["X-Powered-By", "AssemblyScript"]
-	],
-
-  /*
-    Response body. For now, we'll assume it's always a string.
-
-    -> body: [2][0][0]
-  */
-  [[
-		"<h1>Webpage</h1>"
-	]]
-]
+missions._entries();
 ```
 
 # Hello, world
@@ -135,7 +134,7 @@ import * as http from "http";
 
 /** Default server config. Declared at the top. */
 const config = {
-	port: 80,
+	port: 8080,
 	protocol: "http:"
 };
 
@@ -204,20 +203,17 @@ const onRequest = (request, response) => {
 
 	// Proceed with rest of request from there...
 	request.on("end", () => {
-		body = Buffer.concat(body).toString();
+		body = Buffer.concat(body);
 
 		// All data will now be passed for AssemblyScript.It's up to WebAssembly
 		// to handle the response, Node.js will only serve as a bridge...
-		const rawAS = listen(method, url, headers, body, searchParams);
-
-		// AssemblyScript response data.
-		const responseAS = {
-			version   : 				 rawAS[0][0][0],
-			status    : parseInt(rawAS[0][0][1]),
-			statusText: 				 rawAS[0][0][2],
-			headers   : 				 rawAS[1],
-			body      : 				 rawAS[2][0][0]
-		};
+		const responseAS = listen({
+			method: method,
+			url: url,
+			headers: headers,
+			body: body,
+			searchParams: searchParams
+		});
 
 		// Set response headers...
 		for(const header of responseAS.headers) {
@@ -227,8 +223,17 @@ const onRequest = (request, response) => {
 			response.setHeader(key, value);
 		}
 
+		// Take ArrayBuffer sent from AssemblyScript...
+		const bodyAS = new Uint16Array(responseAS.body);
+		let responseBody = "";
+
+		// Decode UTF-16 string...
+		for(const byte of bodyAS) {
+			responseBody += String.fromCharCode(byte);
+		}
+
 		// Write response...
-		response.write(responseAS.body);
+		response.write(responseBody);
 		response.end();
 	});
 };
@@ -249,27 +254,17 @@ confusion about their indexes.
 /**
  * Receives a response from JavaScript, handles it, then sends it back.
  * 
- * @param method Method.
- * @param url URL.
- * @param headers Headers.
- * @param body Body.
- * @param searchParams Query parameters.
+ * @param reqData Web request transfer object.
  * 
- * @returns {string[][][]}
+ * @returns {WebResponseData}
  */
-export function listen(method: string, url: string, headers: SPair[], body: string, searchParams: SPair[]): string[][][] {
+export function listen(reqData: WebRequestData): WebResponseData {
   // Create a Request object with the content sent.
   //
   // Notice how we have to encode the body to an ArrayBuffer. This is because
   // a response body can be pretty much anything. If the user upload a file,
   // for example, then the request body will have to be handled as binary data.
-  const req: WebRequest = new WebRequest(
-    method, 
-    url, 
-    headers, 
-    String.UTF16.encode(body), 
-    searchParams
-  );
+  const req: WebRequest = new WebRequest().import(reqData);
 
   // Create an empty Response object.
   //
@@ -280,53 +275,9 @@ export function listen(method: string, url: string, headers: SPair[], body: stri
   
   // Pass Request and Response objects to the context. From here,
   // AssemblyScript will do all the work of a web server...
-  app.listen(req, res);
-  
-  // Deconstruct and send the response back as a 3D array.
   //
-  // AssemblyScript doesn't support tuples and we can't send objects back to
-  // JavaScript. Given thoses limitations, along with choice of not wanting to
-  // use host bindings, we have to abuse arrays and default types.
-  //
-  // Due to the simplicity of our responses, we can simply use strings for 
-  // everything. The HTTP status code can be dealt by JavaScript later by
-  // using `parseInt()`, while objects can be parsed with `JSON.parse()`.
-  //
-  // For more complex responses, packing everything on a ArrayBuffer would also
-  // work fine.
-  return [
-    /*
-      HTTP's first line of response.
-    
-      -> Version: [0][0][0]
-      -> Status : [0][0][1]
-      -> Text   : [0][0][2]
-     */
-    [[
-      "HTTP/1.1",
-      res.status.toString(), 
-      res.statusText
-    ]],
-    
-    /*
-      Response headers. Because `SMap` already returns a 2D array, it doesn't
-      need to be enclosed with brackets.
-    
-      -> headers: [1][...]
-    */
-    res.headers._entries(),
-
-    /*
-      Response body. For now, we'll assume it's always a string.
-
-      -> body: [2][0][0]
-    */
-    [[
-      res.body != null? 
-        String.UTF16.decode(res.body as ArrayBuffer)
-      : ""
-    ]]
-  ];
+  // In the end, all data will be sent back as an transfer object.
+  return app.listen(req, res).export();
 }
 ```
 
