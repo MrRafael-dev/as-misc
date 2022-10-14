@@ -9,16 +9,26 @@ export class Serializer {
 	 * Serializa um valor do tipo `i16` para um objeto binário.
 	 * 
 	 * @param value Valor.
+	 * @param littleEndian Quando `true`, inverte a ordenação de bytes.
 	 * 
 	 * @returns {Uint8Array}
 	 */
-	static fromInt16(value: i16): Uint8Array {
+	static fromInt16(value: i16, littleEndian: bool = false): Uint8Array {
 		// Resultado.
 		const result: Uint8Array = new Uint8Array(2);
 
-		// Dividir número em bytes...
-		for (let i: i16 = 0; i < 2; i += 1) {
-			result[i] = 0xFF & (value >> (i * 8));
+		// Dividir número em bytes (little-endian)...
+		if(littleEndian) {
+			for (let i: i16 = 1; i >= 0; i -= 1) {
+				result[i] = 0xFF & (value >> (i * 8));
+			}
+		}
+		
+		// Dividir número em bytes (big-endian)...
+		else {
+			for (let i: i16 = 0; i < 2; i += 1) {
+				result[i] = 0xFF & (value >> (i * 8));
+			}
 		}
 
 		return result;
@@ -28,13 +38,17 @@ export class Serializer {
 	 * Deserializa um objeto binário para um valor do tipo `i16`.
 	 * 
 	 * @param value Valor.
+	 * @param littleEndian Quando `true`, inverte a ordenação de bytes.
 	 * 
 	 * @returns {i16}
 	 */
-	static intoInt16(value: Uint8Array): i16 {
+	static intoInt16(value: Uint8Array, littleEndian: bool = false): i16 {
 		return value.byteLength >= 2 ?
-			value[0] * (0x0100)
-			+ value[1] * (0x0001)
+			littleEndian?
+				  value[1] * (0x0100)
+				+ value[0] * (0x0001)
+			: 	value[0] * (0x0100)
+				+ value[1] * (0x0001)
 			: 0;
 	}
 
@@ -42,16 +56,26 @@ export class Serializer {
 	 * Serializa um valor do tipo `i32` para um objeto binário.
 	 * 
 	 * @param value Valor.
+	 * @param littleEndian Quando `true`, inverte a ordenação de bytes.
 	 * 
 	 * @returns {Uint8Array}
 	 */
-	static fromInt32(value: i32): Uint8Array {
+	static fromInt32(value: i32, littleEndian: bool = false): Uint8Array {
 		// Resultado.
 		const result: Uint8Array = new Uint8Array(4);
 
-		// Dividir número em bytes...
-		for (let i: i32 = 0; i < 4; i += 1) {
-			result[i] = 0xFF & (value >> (i * 8));
+		// Dividir número em bytes (little-endian)...
+		if(littleEndian) {
+			for (let i: i32 = 3; i >= 0; i -= 1) {
+				result[i] = 0xFF & (value >> (i * 8));
+			}
+		}
+
+		// Dividir número em bytes (big-endian)...
+		else {
+			for (let i: i32 = 0; i < 4; i += 1) {
+				result[i] = 0xFF & (value >> (i * 8));
+			}
 		}
 
 		return result;
@@ -61,15 +85,21 @@ export class Serializer {
 	 * Deserializa um objeto binário para um valor do tipo `i32`.
 	 * 
 	 * @param value Valor.
+	 * @param littleEndian Quando `true`, inverte a ordenação de bytes.
 	 * 
 	 * @returns {i32}
 	 */
-	static intoInt32(value: Uint8Array): i32 {
+	static intoInt32(value: Uint8Array, littleEndian: bool = false): i32 {
 		return value.byteLength >= 4 ?
-			value[0] * (0x00000001)
-			+ value[1] * (0x00000100)
-			+ value[2] * (0x00010000)
-			+ value[3] * (0x01000000)
+			littleEndian?
+				  value[3] * (0x00000001)
+				+ value[2] * (0x00000100)
+				+ value[1] * (0x00010000)
+				+ value[0] * (0x01000000)
+			: 	value[0] * (0x00000001)
+				+ value[1] * (0x00000100)
+				+ value[2] * (0x00010000)
+				+ value[3] * (0x01000000)
 			: 0;
 	}
 
